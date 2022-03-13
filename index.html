@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        h1 {
+            color: slateblue;
+        }
+        table{
+            text-align: center;
+            border-collapse: collapse;
+            border: solid 4px orange;/*表全体を線で囲う*/
+            background-color: lemonchiffon;
+        }
+        table th {
+            padding: 10px;/*上下左右10pxずつ*/
+            color: #FF9800;/*文字色*/
+            background: #fff5e5;/*背景色*/
+        }
+        table td {
+            padding: 3px 10px;/*上下3pxで左右10px*/
+        }
+        table th, table td {
+            border: solid 1px black;/*実線 1px 黒*/
+            border: solid 2px orange;/**/
+            /*破線 1px オレンジ*/
+        }
+    </style>
+
+<body onload="start()">
+    <h1>JSON To Table App</h1>
+    <div id="text"></div>
+
+    <table>
+        <thead>
+            <tr>
+                <th id="0">id</th>
+                <th id="1">name</th>
+                <th id="2">email</th>
+                <th id="3">phone</th>
+            </tr>
+        </thead>
+        <tbody id='targetTable'></tbody>
+    </table>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script>
+
+    // AjaxでJSONデータを取得
+    function start(){
+       //コードを記述
+       // URLの作成
+       const url = 'https://jsonplaceholder.typicode.com/users';
+
+       // fetch
+       fetch(url).then(function(res) {
+           res.json().then(function(obj) {
+               // データ出力
+               const txt = JSON.stringify(obj, null, '  ');
+               console.log(obj[0].id);
+               console.log(obj.length)
+               console.log(txt);
+
+               let table = document.getElementById('targetTable');
+
+               for (i = 0; i < obj.length; i++) {
+                    let newRow = table.insertRow();
+                    let newCellId = newRow.insertCell();
+                    let newCellName = newRow.insertCell();
+                    let newCellEmail = newRow.insertCell();
+                    let newCellPhone = newRow.insertCell();
+
+                    let newId = document.createTextNode(obj[i].id);
+                    let newName = document.createTextNode(obj[i].name);
+                    let newEmail = document.createTextNode(obj[i].email);
+                    let newPhone = document.createTextNode(obj[i].phone);
+
+                    newCellId.appendChild(newId);
+                    newCellName.appendChild(newName);
+                    newCellEmail.appendChild(newEmail);
+                    newCellPhone.appendChild(newPhone);
+               }
+           });
+       });
+
+       $('th').click(function() {
+           // 情報取得
+           let element = $(this).attr('id');
+           let sortFlg = $(this).data('sort');
+
+           // リセット
+           $('th').data('sort', "");
+
+           // ソート順序
+           if(sortFlg == "" || sortFlg == "desc") {
+               sortFlg = "asc";
+               $(this).data('sort', "asc");
+           } else {
+               sortFlg = "desc";
+               $(this).data('sort', "desc");
+           }
+
+           // テーブルソート処理
+           sortTable(element, sortFlg);
+       });
+
+       function sortTable(element, sortFlg) {
+           let arr = $('table tbody tr').sort(function(a, b) {
+               // ソート対象が数値の場合
+               if($.isNumeric($(a).find('td').eq(element).text())) {
+                   let aNum = Number($(a).find('td').eq(element).text());
+                   let bNum = Number($(b).find('td').eq(element).text());
+
+                   if(sortFlg == "asc") {
+                       return aNum - bNum;
+                   } else {
+                       return bNum - aNum;
+                   }
+               } else { // ソートが数値でない場合
+                   let sortNum = 1;
+
+                   // 比較時は小文字に統一
+                   if($(a).find('td').eq(element).text().toLowerCase() > $(b).find('td').eq(element).text().toLowerCase()) {
+                       sortNum = 1;
+                   } else {
+                       sortNum = -1;
+                   }
+                   if (sortFlg == "desc") {
+                       sortNum *= (-1);
+                   }
+
+                   return sortNum;
+               }
+           });
+           $('table tbody').html(arr);
+       }
+
+    }
+
+</script>
+</body>
+</html>
